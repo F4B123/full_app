@@ -1,19 +1,12 @@
-
 const express = require("express");
-const PORT = process.env.PORT || 3001;
 const app = express();
-var routes = require('./routes.js');
+const PORT = process.env.PORT || 3001;
+const routerController = require('./routes/routerController');
 
-app.use(express.json({
-  limit:"100mb",
-  }))
+app.use(express.json({limit:"100mb",}))
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/api", (req, res) => {
-    res.json({ message: "Hello from server!" });
-});
-
-
-app.use('/',routes);
+app.use('/',routerController);
 
 
 app.listen(PORT, () => {

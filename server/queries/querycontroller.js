@@ -14,8 +14,8 @@ function searchForUser(address, callback) {
 
 
 function insertUser(user, callback) {
-    const query = "INSERT INTO users (address)"
-        + " VALUES ('" + user.address + "')";
+    const query = "INSERT INTO users (address,role)"
+        + " VALUES ('" + user.address + "','"+ user.role +"')";
     console.log("> query: ", query);
     pool.query(query, (err, res) => {
         if(res) callback(err, res.rows);
