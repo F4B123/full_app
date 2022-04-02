@@ -16,14 +16,15 @@ function createToken(user){
 
 
 exports.registerUser = (req,res) =>{
-    //console.log(req.body)
     UserModel.findUser({
         address:req.body.address
     }, (err,address)=>{
         if(err) return res.status(400).json({'msg': err});
-        if(address) return res.status(400).json({'msg':'The address is already registered'});
+        if(address) {
+            console.log("The address is already registered")
+            return res.status(400).json({'msg':'The address is already registered'});
+        }
         let newUser = UserModel.createUser(req.body);
-        //console.log(newUser);
         newUser.saveUser((err, user)=>{
             if(err) return res.status(400).json({'msg':'Error found saving user\n '+'Error\n'+JSON.stringify(err)});
             return res.status(201).json(user);
@@ -31,10 +32,11 @@ exports.registerUser = (req,res) =>{
     })
 }
 
-exports.loginUser = (req,res) => {
+exports.loginUser = async (req,res) => {
     if (req.body.signature != null){
         UserModel.validateAddress(req.body)
-        return res.send(createToken(req.body))
+        //return res.send(createToken(req.body))
+        return res.json({'loged': 'yes'})
     }
     else{
         if (!req.body.address ) {
@@ -49,8 +51,13 @@ exports.loginUser = (req,res) => {
                 return res.status(400).json({'msg':'The user does not exists'});
             }
             let actualUser = UserModel.createUser(user);
-            return res.status(200).json({welldone:"good"});
-    
+            // if(nonce){
+            //     return res.status(200).json({nonce: actualUser.getNonce()});
+            // }
+            return res.status(200).json({'login':'complete'});
+            
+            
+        
             // actualUser.compareAddress(req.body.address, (err, isMatch) =>{
             //     console.log(isMatch,req.body.address,actualUser.address)
             //     //if (isMatch && !err && req.body.address == actualUser.address)
@@ -65,13 +72,16 @@ exports.loginUser = (req,res) => {
             //     }
             // });
         });
+
+        
+
     }
     
 }
 
 
 
-exports.getRoleFromContract = (req,res) =>{
+exports.loginGetRole = (req,res) =>{
     const roleContract = new web3.eth.Contract(
     [
         {
@@ -95,10 +105,10 @@ exports.getRoleFromContract = (req,res) =>{
         }
     ],
     '0xCA28114068143Fc496E65595E8740aDD65C6D62A')
-
+    console.log(req)
     roleContract.methods.getRole("0x2E17F6Ad448ec884649d4b0Dc54F72B24aEf2e34").call( function(error, result) {
-        console.log(result);
-        res.json({message:"role"})
+        //console.log(result,error);
+        res.json({role:result})
     });
     
     

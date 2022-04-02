@@ -79,7 +79,6 @@ class UserP{
 
     saveUser(callback){
         let userResponse = this.generateStructure();
-        //console.log(userResponse)
         queryMaker.InsertUser(userResponse, ( err, res )=>{
             if(err) callback(err, res);
             else callback(err, userResponse);
@@ -89,15 +88,32 @@ class UserP{
     generateStructure(){
         return {
             address:this.address,
-            role:this.role
+            role:this.role,
+            nonce:this.nonce
         };
+    }
+
+    getNonce(){
+        let userResponse = this.generateStructure();
+        queryMaker.ReceiveNonce(userResponse, (err,res)=>{
+            console.log(res)
+            if(res){
+                return res
+            }
+        })
     }
 }
 
 
 function userExists(address, cb){
     queryMaker.Find(address, (e, res)=>{
-        cb(e, res.length>0);
+        if( !res){
+            cb(e, null)
+        }
+        else{
+            cb(e, res.length>0);
+        }
+        
     });
 }
 
@@ -130,4 +146,5 @@ module.exports = {
     validateAddress: function(user, callback) {
         validAddress(user, callback);
     }
+
 }
