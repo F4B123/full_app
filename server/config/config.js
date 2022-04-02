@@ -5,7 +5,7 @@ function getPool (){
         user: 'postgres',
         host: 'localhost',
         database: 'database1',
-        password: '25Abril2001',
+        password: 'password',
         port: 5432,
         max: 5, // max number of clients in the pool
         idleTimeoutMillis: 60000
