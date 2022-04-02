@@ -51,9 +51,7 @@ exports.loginUser = async (req,res) => {
                 return res.status(400).json({'msg':'The user does not exists'});
             }
             let actualUser = UserModel.createUser(user);
-            // if(nonce){
-            //     return res.status(200).json({nonce: actualUser.getNonce()});
-            // }
+            
             return res.status(200).json({'login':'complete'});
             
             
