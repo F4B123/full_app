@@ -51,32 +51,36 @@ exports.loginUser = async (req,res) => {
                 return res.status(400).json({'msg':'The user does not exists'});
             }
             let actualUser = UserModel.createUser(user);
-            
+            actualUser;
             return res.status(200).json({'login':'complete'});
             
+        });
+    }  
+}
+
+exports.getNonce = async (req,res) => {
+    console.log("arrived")
+    if (!req.body.address ) {
+        return res.status(400).json({'msg': 'did not recieve address'});
+    }
+    else{
+        UserModel.returnNonce({address: req.body.address},(err, nonce)=>{
+            if(err){
+                return res.status(400).json({'msg': err});
+            }
+            if(!nonce){
+                return res.status(400).json({'msg':'The user does not exists'});
+            }
+            console.log(nonce,"respuesta aca")
             
-        
-            // actualUser.compareAddress(req.body.address, (err, isMatch) =>{
-            //     console.log(isMatch,req.body.address,actualUser.address)
-            //     //if (isMatch && !err && req.body.address == actualUser.address)
-            //     if ( req.body.address == actualUser.address){
-            //         console.log("yes")
-            //         return res.status(200).json({
-            //             welldone:"good"
-            //         });
-    
-            //     }else{
-            //         return res.status(400).json({'msg':'incorrect address'});
-            //     }
-            // });
+            return res.status(200).json({'login':'nonce returned','nonce':nonce});
+            
         });
 
         
-
     }
-    
-}
 
+}
 
 
 exports.loginGetRole = (req,res) =>{

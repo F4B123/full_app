@@ -1,9 +1,18 @@
 var queryMaker = require('../queries/querycontroller');
 var bcrypt = require('bcryptjs');
 var Web3 = require('web3');
-var web3 = new Web3(Web3.givenProvider || 'ws://some.local-or-remote.node:8546');
+var web3 = new Web3(
+    new Web3.providers.HttpProvider(
+      "https://rinkeby.infura.io/v3/8a8a6f324f164e55a75fbbff388f020a"
+    )
+  );
 
-//nonce-- for each user generate a random string
+var Personal = require('web3-eth-personal');
+
+// "Personal.providers.givenProvider" will be set if in an Ethereum supported browser.
+var personal = new Personal(new Web3.providers.HttpProvider(
+    "https://rinkeby.infura.io/v3/8a8a6f324f164e55a75fbbff388f020a"
+  ));
 class UserP{
     constructor(bodyRequest) {
         this.address = bodyRequest.address;
@@ -19,63 +28,7 @@ class UserP{
         return this._address;
     }
 
-
     generateNonce(){return Math.floor(Math.random() * 1000000);}
-
-    // getUniqueId(len){
-    //     return crypto
-    //             .randomBytes(Math.ceil((len * 3) / 4))
-    //             .toString('base64') // convert to base64 format
-    //             .slice(0, len) // return required number of characters
-    //             .replace(/\+/g, '0') // replace '+' with '0'
-    //             .replace(/\//g, '0') // replace '/' with '0'
-    // }
-
-    //Change from comparePassword to compare address
-    // compareAddress(candidateAddress, cb){
-    //     bcrypt.compare(candidateAddress, this.address, (err, isMatch)=>{
-    //         console.log(candidateAddress)
-    //         console.log(this.address)
-    //         if(err) return cb(err);
-    //         cb(null, isMatch);
-    //     });
-    // }
-
-    // preSave(callback){
-    //     var user = this;
-    //     bcrypt.genSalt(10, function(err_, salt){
-    //         if (err_) {
-    //             callback(err_);
-    //             return err_;
-    //         }else{
-    //             bcrypt.hash(user.address, salt, function(err__, hash){
-    //                 if(err__){
-    //                     callback(err__);
-    //                     return err__;
-    //                 }
-    //                 user.address = hash;
-    //                 callback(err__);
-    //                 return err__;
-    //             });
-    //         }
-    //     });     
-    // }
-
-    // saveUser(callback){
-    //     this.preSave((e)=>{
-    //         if(e){
-    //             console.log("Error in hash procedure, impossible to register user ", e);
-    //             callback(e, "Error in hash procedure, impossible to register user ");
-    //         }else{
-    //             let userResponse = this.generateStructure();
-    //             console.log(userResponse)
-    //             queryMaker.InsertUser(userResponse, ( err, res )=>{
-    //                 if(err) callback(err, res);
-    //                 else callback(err, userResponse);
-    //             }); 
-    //         }
-    //     });
-    // }
 
     saveUser(callback){
         let userResponse = this.generateStructure();
@@ -93,15 +46,6 @@ class UserP{
         };
     }
 
-    getNonce(){
-        let userResponse = this.generateStructure();
-        queryMaker.ReceiveNonce(userResponse, (err,res)=>{
-            console.log(res)
-            if(res){
-                return res
-            }
-        })
-    }
 }
 
 
@@ -126,11 +70,31 @@ function searchUser(user, cb){
 }
 
 function validAddress(user, cb){
+
+    //user ecRecovery
     console.log("validadndo",user)
 
     //here we should validate the user
-    //web3.eth.personal.ecRecover(user.address, user.signature).then("validado",console.log)
+    personal.ecRecover(user.address, user.nonce, user.signature).then("validado",console.log)
     
+}
+
+function getNonce(address,cb){
+    queryMaker.ReceiveNonce(address, (err,res)=>{
+        console.log(res,"respuesta")
+        const nonce = res
+        // if(res){
+        //     return nonce
+        // }
+        if(!res) cb(err, null);
+        else if(res) {
+            //console.log("allright")
+            cb(err, nonce);
+            
+        }
+        else cb(err, null);
+    }
+    )
 }
 
 module.exports = {
@@ -145,6 +109,10 @@ module.exports = {
     },
     validateAddress: function(user, callback) {
         validAddress(user, callback);
+    },
+    returnNonce:function(user, callback) {
+        getNonce(user, callback);
     }
+
 
 }
